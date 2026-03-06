@@ -57,7 +57,7 @@ jobs:
 
       - name: Mobile Friendly Output
         run: |
-          echo "::notice title=Mobile Remote Control::Cloud command completed successfully."
+          echo "::notice title=Mobile Remote Control [$COMMAND]::Cloud command completed successfully."
 
   local-execution:
     name: Local PC (Home Automation)
@@ -90,4 +90,4 @@ jobs:
       - name: Mobile Friendly Output
         shell: pwsh
         run: |
-          Write-Host "::notice title=Mobile Remote Control::Local PC command completed successfully."
+          Write-Host "::notice title=Mobile Remote Control [$env:COMMAND]::Local PC command completed successfully."
