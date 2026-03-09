@@ -1,4 +1,4 @@
-# Workflow folder
+﻿# Workflow folder
 $workflowDir = ".github\workflows"
 if (-not (Test-Path $workflowDir)) {
     New-Item -ItemType Directory -Path $workflowDir -Force | Out-Null

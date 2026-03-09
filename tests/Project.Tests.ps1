@@ -1,4 +1,4 @@
-Describe "System Automation Hub Structure" {
+﻿Describe "System Automation Hub Structure" {
     It "Should have the main entry point (start-automation.ps1)" {
         Test-Path "./start-automation.ps1" | Should -Be \$true
     }

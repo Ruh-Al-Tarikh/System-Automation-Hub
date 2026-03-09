@@ -1,4 +1,4 @@
-# Files to remove (relative to repo root)
+﻿# Files to remove (relative to repo root)
 $filesToDelete = @(
     ".github\workflows\create-powershell-ci.ps1",
     ".github\workflows\download-cert.yml",

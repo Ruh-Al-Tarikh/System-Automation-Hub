@@ -1,4 +1,4 @@
-# Hardcoded GitHub Personal Access Token (with repo/workflows scope)
+﻿# Hardcoded GitHub Personal Access Token (with repo/workflows scope)
 $token = $env:GITHUB_TOKEN
 
 # GitHub repo info
