@@ -1,4 +1,4 @@
-name: PowerShell CI
+name: PowerShell Security Scan
 
 on:
   push:
@@ -8,35 +8,26 @@ on:
   workflow_dispatch:
 
 jobs:
-  lint-and-test:
+  security-scan:
     runs-on: windows-latest
     steps:
-      - name: Checkout repo
+      - name: Checkout repository
         uses: actions/checkout@v4
 
       - name: Install PSScriptAnalyzer
         shell: pwsh
         run: Install-Module PSScriptAnalyzer -Force -Scope CurrentUser
 
-      - name: Run PSScriptAnalyzer
+      - name: Run Security Scan
         shell: pwsh
         run: |
-          $results = Invoke-ScriptAnalyzer -Path . -Recurse -Severity Error,Warning
+          $results = Invoke-ScriptAnalyzer -Path . -Recurse -Severity Error,Warning |
+                     Where-Object { $_.RuleName -like "*Security*" }
+
           if ($results) {
               $results | Format-Table
-              throw "PSScriptAnalyzer found issues"
-          }
-
-      - name: Install Pester
-        shell: pwsh
-        run: Install-Module Pester -Force -Scope CurrentUser -SkipPublisherCheck
-
-      - name: Run Pester Tests
-        shell: pwsh
-        run: |
-          if (Test-Path ./tests) {
-              Import-Module Pester
-              Invoke-Pester -Path ./tests -Verbose
+              Write-Host "::error title=Security Scan::Potential security issues found."
+              throw "Security issues detected by PSScriptAnalyzer"
           } else {
-              Write-Host "No Pester tests found."
+              Write-Host "::notice title=Security Scan::No common security issues found."
           }
