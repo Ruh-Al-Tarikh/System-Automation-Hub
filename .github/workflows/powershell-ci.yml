@@ -1,10 +1,27 @@
-$ciFile = "$workflowDir\powershell-ci.yml"
+# Path to workflows folder
+$workflowDir = ".github\workflows"
 
-if (Test-Path $ciFile) {
-    $answer = Read-Host "$ciFile already exists. Overwrite? (Y/N)"
-    if ($answer -ne 'Y') { Write-Host "Skipped creating $ciFile"; break }
+# Ensure the folder exists
+if (-not (Test-Path $workflowDir)) {
+    New-Item -ItemType Directory -Path $workflowDir -Force
+    Write-Host "Created folder $workflowDir"
+} else {
+    Write-Host "$workflowDir already exists."
 }
 
+# Path to the PowerShell CI workflow
+$ciFile = "$workflowDir\powershell-ci.yml"
+
+# Prompt if file exists
+if (Test-Path $ciFile) {
+    $answer = Read-Host "$ciFile already exists. Overwrite? (Y/N)"
+    if ($answer -ne 'Y') {
+        Write-Host "Skipped creating $ciFile"
+        return
+    }
+}
+
+# Content of powershell-ci.yml
 @"
 name: PowerShell CI
 
