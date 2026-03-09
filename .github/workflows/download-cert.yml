@@ -1,0 +1,42 @@
+$certFile = "$workflowDir\download-cert.yml"
+
+if (Test-Path $certFile) {
+    $answer = Read-Host "$certFile already exists. Overwrite? (Y/N)"
+    if ($answer -ne 'Y') { Write-Host "Skipped creating $certFile"; break }
+}
+
+@"
+name: Download TLS Certificate
+
+on:
+  workflow_dispatch:
+
+jobs:
+  download-cert:
+    runs-on: windows-latest
+    env:
+      HOSTNAME: github.com
+      OUTPUT_CERT: \${{ github.workspace }}\bin\checkScripts\download_ca_cert.pem
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+
+      - name: Download TLS certificate
+        shell: pwsh
+        run: |
+          \$certPath = "\${{ env.OUTPUT_CERT }}"
+          if (Test-Path \$certPath) {
+              \$timestamp = Get-Date -Format yyyyMMddHHmmss
+              Rename-Item \$certPath "\$certPath.\$timestamp.bak"
+              Write-Host "Existing certificate backed up."
+          }
+          node .\bin\checkScripts\runDownloadCert.js \$env:HOSTNAME
+"@ | Set-Content -Path $certFile -Force
+
+Write-Host "$certFile created successfully."
