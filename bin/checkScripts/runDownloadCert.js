@@ -1,25 +1,26 @@
 // runDownloadCert.js
+// Script to run the certificate download and handle backups
 const fs = require('fs');
 const path = require('path');
-const { downloadCert } = require('./downloadCert');
+const downloadCert = require('./downloadCert');
 
-// File where the certificate will be saved
-const OUTPUT_FILE = './download_ca_cert.pem';
+// Output certificate path
+const OUTPUT_FILE = path.resolve(__dirname, 'download_ca_cert.pem');
 
 (async () => {
     try {
-        // Check if the file already exists
+        // Backup existing certs
         if (fs.existsSync(OUTPUT_FILE)) {
-            console.log(`${OUTPUT_FILE} already exists. Backing it up.`);
             const backupFile = `${OUTPUT_FILE}.${Date.now()}.bak`;
             fs.renameSync(OUTPUT_FILE, backupFile);
-            console.log(`Existing file backed up as ${backupFile}`);
+            console.log(`Existing certificate backed up as ${backupFile}`);
         }
 
-        // Download certificate
+        // Download from github.com
         await downloadCert('github.com', 443, OUTPUT_FILE);
-        console.log('Certificate download complete.');
+        console.log(`Certificate successfully saved to ${OUTPUT_FILE}`);
     } catch (err) {
-        console.error('Error:', err);
+        console.error('Error downloading certificate:', err);
+        process.exit(1); // Fail workflow if download fails
     }
 })();
