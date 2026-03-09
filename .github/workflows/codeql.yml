@@ -7,6 +7,7 @@ on:
     branches: [main]
   schedule:
     - cron: '0 0 * * 1' # Every Monday at midnight
+  workflow_dispatch:
 
 jobs:
   analyze:
@@ -19,7 +20,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        language: ['javascript-typescript'] # Node-based scripts in bin/
+        language: ['javascript-typescript']
     timeout-minutes: 30
 
     steps:
@@ -35,7 +36,7 @@ jobs:
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v3
         with:
-          category: "/language:${{ matrix.language }}"
+          category: ${{ matrix.language }}
 
   analyze-powershell:
     name: PowerShell Security Scan
@@ -54,11 +55,14 @@ jobs:
         shell: pwsh
         run: Install-Module PSScriptAnalyzer -Force -Scope CurrentUser
 
-      - name: Run PSScriptAnalyzer Security Scan
+      - name: Run PowerShell Security Scan
         shell: pwsh
         run: |
-          $results = Invoke-ScriptAnalyzer -Path . -Recurse -Severity Error,Warning `
-                      | Where-Object { $_.RuleName -like "*Security*" }
+          # Adjust folder path if needed, e.g., .\bin or .\src
+          $psFiles = Get-ChildItem -Path . -Include *.ps1,*.psm1 -Recurse
+          $results = Invoke-ScriptAnalyzer -Path $psFiles -Recurse -Severity Error,Warning |
+                     Where-Object { $_.RuleName -like "*Security*" }
+
           if ($results) {
               $results | Format-Table
               Write-Host "::error title=Security Scan::Potential security issues found in PowerShell scripts."
