@@ -18,11 +18,15 @@ Describe "PowerShell Script Syntax Verification" {
 
         foreach ($file in $psFiles) {
             It "Should have valid syntax for $($file.Name)" {
-                $errorActionPreference = "Stop"
-                Get-Command -ErrorAction SilentlyContinue -Name Out-Null # Ensure we can run commands
+                $errors = $null
+                $tokens = $null
+                # Use the built-in Parser to verify syntax without external module dependencies
+                [System.Management.Automation.Language.Parser]::ParseFile($file.FullName, [ref]$tokens, [ref]$errors) | Out-Null
 
-                # Check for syntax errors by parsing the script
-                { [Microsoft.PowerShell.Commands.ScriptAnalyzer.Helper]::GetTokens($file.FullName, [ref]$null, [ref]$null) } | Should -Not -Throw
+                if ($errors) {
+                    $errorMessages = $errors | ForEach-Object { "$($_.Message) at line $($_.Extent.StartLineNumber):$($_.Extent.StartColumnNumber)" }
+                    throw "Syntax errors found in $($file.Name):`n$($errorMessages -join "`n")"
+                }
             }
         }
     }
