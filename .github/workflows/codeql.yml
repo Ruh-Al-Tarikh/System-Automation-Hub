@@ -70,22 +70,15 @@ jobs:
       - name: Run PowerShell Security Scan
         shell: pwsh
         run: |
-          $psFiles = Get-ChildItem -Path . -Include *.ps1,*.psm1 -Recurse -File |
-                     Select-Object -ExpandProperty FullName
+          # Run PSScriptAnalyzer recursively on the repository
+          $results = Invoke-ScriptAnalyzer -Path . -Recurse -Severity Error,Warning |
+                     Where-Object { $_.RuleName -like "*Security*" }
 
-          if ($psFiles) {
-              $results = Invoke-ScriptAnalyzer -Path $psFiles -Severity Error,Warning |
-                         Where-Object { $_.RuleName -like "*Security*" }
-
-              if ($results) {
-                  $results | Format-Table
-                  Write-Host "::error title=Security Scan::Potential security issues found in PowerShell scripts."
-                  throw "Security issues detected by PSScriptAnalyzer"
-              }
-              else {
-                  Write-Host "::notice title=Security Scan::No common security issues found in PowerShell scripts."
-              }
+          if ($results) {
+              $results | Format-Table
+              Write-Host "::error title=Security Scan::Potential security issues found in PowerShell scripts."
+              throw "Security issues detected by PSScriptAnalyzer"
           }
           else {
-              Write-Host "::notice title=Security Scan::No PowerShell files found."
+              Write-Host "::notice title=Security Scan::No common security issues found in PowerShell scripts."
           }
